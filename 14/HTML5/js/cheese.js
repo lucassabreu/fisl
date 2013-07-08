@@ -7,9 +7,14 @@ var Cheese = function(x, y) {
     this.image.src = "images/cheese.png";
 
     this.level = null;
+    this.hp = 0;
+    this._hpInterval = 500;
+    this._hpTimeout = this._hpInterval;
 
     this.holes = [];
     this.enemies = [];
+
+    this.enemiesAlive = 0;
 
     // fim: por conta
 };
@@ -20,6 +25,7 @@ Cheese.prototype.loadLevel = function(level) {
     this.enemies = [];
 
     this.level = level;
+    this.hp = level.hp;
 
     var index = 0, holeMeta = null;
 
@@ -29,6 +35,7 @@ Cheese.prototype.loadLevel = function(level) {
     }
 
     var enemy = null, enemyMeta = null;
+    this.enemiesAlive = 0;
     for (index in this.level.enemies) {
         enemyMeta = this.level.enemies[index];
 
@@ -39,6 +46,7 @@ Cheese.prototype.loadLevel = function(level) {
         }
 
         this.enemies.push(enemy);
+        this.enemiesAlive++;
     }
 
     // fim: por conta
@@ -46,22 +54,49 @@ Cheese.prototype.loadLevel = function(level) {
 
 Cheese.prototype.processInputs = function(clicks) {
     if (clicks.length > 0) {
-        console.clear();
+        var click = null;
+
         for (var index in clicks) {
-            console.log(clicks[index]);
+            click = {
+                x: (clicks[index].x - this.x + window.scrollX),
+                y: (clicks[index].y - this.y + window.scrollY)
+            };
 
             var enemy = null;
-            for (var iEne in this.enemies) {
+            for (var iEne in this.enemies)
+            {
                 enemy = this.enemies[iEne];
-                enemy.collide(clicks[index]);
+                if (enemy.collide(click)) {
+                    enemy.kill();
+                    this.enemiesAlive--;
+                    break;
+                }
             }
         }
     }
 };
 
 Cheese.prototype.update = function(delta) {
-    for (var index in this.holes) {
-        this.enemies[index].show(this.holes[index]);
+    var enemy = null, iHole = null;
+    for (var index in this.enemies) {
+        enemy = this.enemies[index];
+
+        if (!enemy.isDead() && !enemy.isVisible()) {
+            if (enemy.probability > Math.random()) {
+                iHole = Utils.getRandomInt(0, this.holes.length - 1);
+                if (!this.holes[iHole].hasEnemy())
+                    enemy.show(this.holes[iHole]);
+            }
+        }
+
+        enemy.update(delta);
+    }
+
+    this._hpTimeout -= delta;
+    if (this._hpTimeout <= 0) {
+        this._hpTimeout = this._hpInterval;
+        
+        this.hp -= this.enemiesAlive;
     }
 };
 

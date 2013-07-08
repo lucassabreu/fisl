@@ -5,7 +5,7 @@ var Hole = function(x, y, type) {
 
     this.image = new Image();
     this.image.src = Hole.types[type - 1];
-    this.enemy = null;
+    this._enemy = null;
     // fim: primeira etapa
 };
 
@@ -26,9 +26,18 @@ Hole.prototype.draw = function(context) {
 };
 
 Hole.prototype.setEnemy = function(enemy) {
-    if (this.enemy !== null)
-        this.enemy.hole = null;
-    
-    this.enemy = enemy;
-    this.enemy.hole = this;
+    if (this._enemy !== null) {
+        this._enemy.hole = null;
+    }
+
+    if (enemy === null) {
+        this._enemy = null;
+    } else {
+        this._enemy = enemy;
+        this._enemy.hole = this;
+    }
+};
+
+Hole.prototype.hasEnemy = function() {
+    return this._enemy !== null;
 };

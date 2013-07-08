@@ -1,60 +1,117 @@
 var Rat = function(interval, probability) {
     this.interval = interval;
     this.probability = probability;
+    this._state = Rat.State.Default;
+    this._visible = false;
 
     this.image = new Image();
     this.image.src = "images/mouse1.png";
+    this._timeout = 0;
+    this._hole = null;
 
-    this.hole = null;
-
-    // na sugestão não teria this.hole
-    // existiria this.x e this.y
-
-    //this.x = 0;
-    //this.y = 0;
-
+    this._dyingTimeout = 0;
+    this._dyingAnimationTimer = 0;
+    this._dyingFrameTime = 200;
+    this._dyingCurrentFrame = 0;
+    this._dyingframeCount = 2;
+    this._imageDying = new Image();
+    this._imageDying.src = "images/mouse2.png";
 };
 
-
-Rat.prototype.draw = function(context) {
-    if (this.hole !== null) {
-        context.drawImage(this.image,
-                this.hole.x - this.image.width / 2,
-                this.hole.y - this.image.height / 2);
-    }
-
+Rat.State = {
+    Default: 0,
+    Dying: 1,
+    Dead: 2
 };
 
 Rat.prototype.collide = function(point) {
-    if (this.hole === null)
-        return;
+    if (this._hole === null || !this.isVisible())
+        return false;
 
-    var rect = {
-        xIni: this.hole.x - (this.image.width / 2),
-        yIni: this.hole.y - (this.image.height / 2),
-        xFin: this.hole.x + (this.image.width / 2),
-        yFin: this.hole.y + (this.image.height / 2)
-    }
+    var v_rect = {
+        // centro - metade da altura + espaco em branco
+        left: this._hole.x - (this.image.width / 2),
+        top: this._hole.y - (this.image.height / 2),
+        right: this._hole.x + (this.image.width / 2),
+        bottom: this._hole.y + (this.image.height / 2)
+    };
 
-    console.log(rect);
+    return v_rect.left < point.x && v_rect.right > point.x
+            && v_rect.top < point.y && v_rect.bottom > point.y;
+};
 
-    if (rect.xIni <= point.x && rect.xFin >= point.x
-            && rect.yIni <= point.y && rect.yFin >= point.y) {
-        alert('true');
-    }
+Rat.prototype.kill = function() {
+    this._state = Rat.State.Dying;
+    this._dyingTimeout = 1000;
+    this._actualDyingSprite = 1;
+};
+
+Rat.prototype.isVisible = function() {
+    return this._visible;
+};
+
+Rat.prototype.isDead = function() {
+    return this._state !== Rat.State.Default;
 };
 
 Rat.prototype.update = function(delta) {
+    if (this._state === Rat.State.Default) {
+        this._timeout -= delta;
 
+        if (this._timeout <= 0) {
+            this._visible = false;
+            if (this._hole !== null)
+                this._hole.setEnemy(null);
+        }
+    } else {
+        if (this._state === Rat.State.Dying) {
+            this._dyingTimeout -= delta;
+            this._dyingAnimationTimer += delta;
+
+            var frameInc = Math.floor(this._dyingAnimationTimer / this._dyingFrameTime);
+
+            this._dyingAnimationTimer %= this._dyingFrameTime;
+            this._dyingCurrentFrame += frameInc;
+            this._dyingCurrentFrame %= this._dyingframeCount;
+
+            if (this._dyingTimeout <= 0) {
+                this._state = Rat.State.Dead;
+                this._visible = false;
+
+                if (this._hole !== null)
+                    this._hole.setEnemy(null);
+
+                this._hole = null;
+            }
+        }
+    }
 };
 
 Rat.prototype.show = function(hole) {
-    this.hole = hole;
-    this.hole.setEnemy(this);
+    this._hole = hole;
+    this._hole.setEnemy(this);
+    this._visible = true;
+    this._timeout = this.interval;
+};
 
-    //this.x = hole.x;
-    //this.y = hole.y;
-
-    // não alimentaria hole
-    // pega hole.x e hole.y de hole e copia para this.x e this.y
+Rat.prototype.draw = function(context) {
+    if (this._hole !== null && this.isVisible()) {
+        if (this._state === Rat.State.Default) {
+            context.drawImage(this.image,
+                    this._hole.x - this.image.width / 2,
+                    this._hole.y - this.image.height / 2);
+        } else {
+            if (this._state === Rat.State.Dying) {
+                context.drawImage(this._imageDying,
+                        this.image.width * this._dyingCurrentFrame,
+                        0,
+                        this.image.width,
+                        this.image.height,
+                        this._hole.x - this.image.width / 2,
+                        this._hole.y - this.image.height / 2,
+                        this.image.width,
+                        this.image.height);
+            }
+        }
+    }
 };
