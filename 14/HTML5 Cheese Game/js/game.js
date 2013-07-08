@@ -95,7 +95,7 @@ Game.prototype.onNextLevel = function(e) {
 };
 
 Game.prototype.start = function() {
-    this._pauseButton.src = "/images/pause.png";
+    this._pauseButton.src = "images/pause.png";
     this._state = Game.State.Running;
     this._mainLoop();
     this._pauseMenu.style.display = "none";
@@ -104,7 +104,7 @@ Game.prototype.start = function() {
 };
 
 Game.prototype.pause = function() {
-    this._pauseButton.src = "/images/play.png";
+    this._pauseButton.src = "images/play.png";
     this._state = Game.State.Paused;
     window.clearInterval(this._looper);
     this._looper = null;
