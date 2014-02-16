@@ -95,7 +95,7 @@ Game.prototype.onNextLevel = function(e) {
 };
 
 Game.prototype.start = function() {
-    this._pauseButton.src = "/images/pause.png";
+    this._pauseButton.src = "images/pause.png";
     this._state = Game.State.Running;
     this._mainLoop();
     this._pauseMenu.style.display = "none";
@@ -104,7 +104,7 @@ Game.prototype.start = function() {
 };
 
 Game.prototype.pause = function() {
-    this._pauseButton.src = "/images/play.png";
+    this._pauseButton.src = "images/play.png";
     this._state = Game.State.Paused;
     window.clearInterval(this._looper);
     this._looper = null;
@@ -151,18 +151,10 @@ Game.prototype._update = function() {
             this._state = Game.State.Winned;
             this._pauseButton.src = "images/retry.png";
 
-            console.clear();
-            console.log(this._currentLevelNumber + 1);
-            console.log(Levels[this._currentLevelNumber + 1]);
-
             if (Levels[this._currentLevelNumber + 1]) {
-                console.log("reher");
                 this._nextLevelButton.innerHTML = "Next Level &Gg;";
-                console.log(this._nextLevelButton);
             } else {
-                console.log("iet");
                 this._nextLevelButton.innerHTML = "Reset Game?";
-                console.log(this._nextLevelButton);
             }
 
             this._winMenu.style.display = "block";

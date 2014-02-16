@@ -13,7 +13,7 @@ var Rat = function(interval, probability) {
     this._dyingAnimationTimer = 0;
     this._dyingFrameTime = 200;
     this._dyingCurrentFrame = 0;
-    this._dyingframeCount = 2;
+    this._dyingFrameCount = 2;
     this._imageDying = new Image();
     this._imageDying.src = "images/mouse2.png";
 };
@@ -72,7 +72,7 @@ Rat.prototype.update = function(delta) {
 
             this._dyingAnimationTimer %= this._dyingFrameTime;
             this._dyingCurrentFrame += frameInc;
-            this._dyingCurrentFrame %= this._dyingframeCount;
+            this._dyingCurrentFrame %= this._dyingFrameCount;
 
             if (this._dyingTimeout <= 0) {
                 this._state = Rat.State.Dead;
